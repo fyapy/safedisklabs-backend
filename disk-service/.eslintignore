@@ -1,0 +1,6 @@
+*.test.js
+*.conf.js
+*.mock.js
+dist
+public
+node_modules

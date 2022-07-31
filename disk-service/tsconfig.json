@@ -1,0 +1,23 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["es2022", "esnext.asynciterable", "DOM"],
+    "baseUrl": "./src",
+    "removeComments": true,
+    "declaration": false,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "pretty": true,
+    "sourceMap": false,
+    "allowJs": false,
+    "noEmit": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strictNullChecks": true
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules"]
+}

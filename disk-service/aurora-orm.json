@@ -1,0 +1,4 @@
+{
+  "type": "postgresql",
+  "connectionString": "env:DATABASE_URL"
+}
