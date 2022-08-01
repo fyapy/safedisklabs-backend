@@ -16,6 +16,6 @@ module.exports = createMigration({
     `)
   },
   async down({ sql }) {
-    await sql.query('DROP TABLE users')
+    await sql.query('DROP TABLE "users"')
   },
 })

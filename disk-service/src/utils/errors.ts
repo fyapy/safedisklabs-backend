@@ -4,6 +4,7 @@ import type {
   RawRequestDefaultExpression,
   RawServerDefault,
 } from 'fastify'
+import { formatErrorMsg, parseAcceptLanguage } from 'i18n'
 import { validateSchema } from 'zoply-schema'
 
 export class HttpError extends Error {
@@ -27,18 +28,15 @@ export class NotFound extends HttpError {
   }
 }
 
-export function throwErrorIf(val: boolean, text: string) {
-  if (val === true) {
-    throw new BadRequest(text)
-  }
-}
-
 type Validate<T> = preHandlerHookHandler<RawServerDefault, RawRequestDefaultExpression, RawReplyDefaultExpression, { Body: T }> // eslint-disable-line
 
-export const zoplyValidate = (schema: any): Validate<any> => ({ body }, res, done) => {
+export const zoplyValidate = (schema: any): Validate<any> => (req, res, done) => {
+  req.lang = parseAcceptLanguage(req.headers['accept-language']!)
+
   const errors = validateSchema({
     schema,
-    values: body,
+    values: req.body,
+    formater: formatErrorMsg(req.lang),
   })
 
   if (Object.keys(errors).length != 0) {

@@ -8,6 +8,7 @@ import multer from 'fastify-multer'
 
 export const bytesToMB = (bytes: number) => bytes / (1024 * 1024)
 export const MBToBytes = (mg: number) => mg * 1024 * 1024
+export const GBToBytes = (gb: number) => gb * MBToBytes(1024)
 
 export const rootPath = (...args: string[]) => join(process.cwd(), ...args)
 export const fileExist = (path: string) => new Promise(
@@ -21,6 +22,14 @@ export const tmpStorage = multer.diskStorage({
     `${crypto.randomUUID()}_${Date.now()}${extname(file.originalname)}`,
   ),
 })
+export const fileUpload = multer({
+  storage: tmpStorage,
+  limits: {
+    fieldNameSize: 80,
+    fieldSize: MBToBytes(20),
+  },
+})
+
 
 const unlinkFile = async (file: File) => {
   if (!file?.path) return
