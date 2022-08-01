@@ -1,8 +1,9 @@
 import type { Models } from 'utils/types'
 import { BadRequest } from 'utils/errors'
 import * as input from '../input'
+import { FileOrFolderModel } from '../models'
 
-export function DiskService({ FolderModel, FileModel, DiskModel }: Models) {
+export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
   async function userHavePermission(diskId: string, userId: number) {
     const isExist = await DiskModel.exists({
       id: diskId,
@@ -14,24 +15,11 @@ export function DiskService({ FolderModel, FileModel, DiskModel }: Models) {
     }
   }
 
-  async function toggleHidden({ id, type }: input.ToggleHidden, userId: number) {
-    if (type === 'file') {
-      const fileInDb = await FileModel.findOne(id)
-      await userHavePermission(fileInDb.diskId, userId)
-
-      await FileModel.update({
-        where: id,
-        set: {
-          hidden: !fileInDb.hidden,
-        },
-      })
-      return {}
-    }
-
-    const folderInDb = await FolderModel.findOne(id)
+  async function toggleHidden({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
+    const folderInDb = await model.findOne(id)
     await userHavePermission(folderInDb.diskId, userId)
 
-    await FolderModel.update({
+    await model.update({
       where: id,
       set: {
         hidden: !folderInDb.hidden,
@@ -40,24 +28,11 @@ export function DiskService({ FolderModel, FileModel, DiskModel }: Models) {
     return {}
   }
 
-  async function toggleStarred({ id, type }: input.ToggleHidden, userId: number) {
-    if (type === 'file') {
-      const fileInDb = await FileModel.findOne(id)
-      await userHavePermission(fileInDb.diskId, userId)
-
-      await FileModel.update({
-        where: id,
-        set: {
-          starred: !fileInDb.starred,
-        },
-      })
-      return {}
-    }
-
-    const folderInDb = await FolderModel.findOne(id)
+  async function toggleStarred({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
+    const folderInDb = await model.findOne(id)
     await userHavePermission(folderInDb.diskId, userId)
 
-    await FolderModel.update({
+    await model.update({
       where: id,
       set: {
         starred: !folderInDb.starred,
@@ -66,8 +41,41 @@ export function DiskService({ FolderModel, FileModel, DiskModel }: Models) {
     return {}
   }
 
+  async function rename({ id, name }: input.Rename, userId: number, model: FileOrFolderModel) {
+    const folderInDb = await model.findOne(id)
+    await userHavePermission(folderInDb.diskId, userId)
+
+    await model.update({
+      where: id,
+      set: {
+        name,
+      },
+    })
+    return {}
+  }
+
+  async function list(userId: number) {
+    const tx = await FileModel.getConnect()
+
+    try {
+      const folders = await FolderModel.findOne({ userId, folderId: null })
+      const files = await FileModel.findOne({ userId, folderId: null })
+
+      return {
+        folders,
+        files,
+      }
+    } catch (e) {
+      throw e
+    } finally {
+      tx.release()
+    }
+  }
+
   return {
     toggleHidden,
     toggleStarred,
+    rename,
+    list,
   }
 }

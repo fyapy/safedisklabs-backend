@@ -7,6 +7,7 @@ export interface Folder {
   diskId: string
   folderId: string | null
   hidden: boolean
+  shared: boolean
   starred: boolean
   updatedAt: string
   createdAt: string
@@ -21,6 +22,7 @@ export const FolderModel = createModel<Folder>({
     diskId: 'disk_id',
     folderId: 'folder_id',
     hidden: 'hidden',
+    shared: 'shared',
     starred: 'starred',
     updatedAt: 'updated_at',
     createdAt: 'created_at',

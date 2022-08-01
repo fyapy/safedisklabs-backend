@@ -26,3 +26,14 @@ export const toggleHiddenSchema = {
   id: required,
   type: oneOf(['folder', 'file']),
 }
+
+export interface Rename {
+  id: string
+  name: string
+  type: 'folder' | 'file'
+}
+export const renameSchema = {
+  id: required,
+  name: required,
+  type: oneOf(['folder', 'file']),
+}

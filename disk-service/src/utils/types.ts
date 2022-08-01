@@ -12,6 +12,9 @@ import type {
 } from 'modules/disks'
 import type { Language } from 'i18n'
 
+export interface JustId {
+  id: string
+}
 
 export type File = import('fastify-multer/lib/interfaces').File
 export type FilesInRequest = File[]
@@ -40,6 +43,7 @@ export interface Services {
   FileService: ReturnType<typeof FileService>
   DiskService: ReturnType<typeof DiskService>
 }
+export type GetServices = () => Services
 
 export type SetupRoutes = FastifyPluginCallback<{
   services: Services

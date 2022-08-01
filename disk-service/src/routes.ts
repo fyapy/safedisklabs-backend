@@ -21,6 +21,7 @@ export const RoutesPlugin = (): {
 
     UserService: users.UserService(Models),
     AuthService: auth.AuthService(Models),
+    DiskService: disks.DiskService(Models),
     FileService: disks.FileService(Models),
     FolderService: disks.FolderService(Models),
   }
@@ -29,7 +30,8 @@ export const RoutesPlugin = (): {
     Models,
     services,
     plugin: (fastify, _, done) => {
-      fastify.register(disks.setupRoutes, { prefix: '/disks', services })
+      fastify.register(disks.diskRoutes, { prefix: '/disks', services })
+      fastify.register(disks.fileRoutes, { prefix: '/files', services })
       fastify.register(auth.setupRoutes, { prefix: '/auth', services })
       fastify.register(users.setupRoutes, { prefix: '/users', services })
 

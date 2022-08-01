@@ -1,15 +1,14 @@
 import { Models } from 'utils/types'
 import * as input from '../input'
 
-export function FolderService({ FolderModel }: Models) {
-  async function create({ name, diskId, folderId }: input.CreateFolder, userId: number) {
-    await FolderModel.create({
+export const FolderService = ({ FolderModel }: Models) => {
+  const create = ({ name, diskId, folderId }: input.CreateFolder, userId: number) => FolderModel
+    .create({
       name,
       diskId,
       folderId,
       userId,
     })
-  }
 
   return {
     create,
