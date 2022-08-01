@@ -1,4 +1,4 @@
-import { Models } from 'utils/types'
+import type { Models } from 'utils/types'
 
 // eslint-disable-next-line no-empty-pattern
 export function FileService({}: Models) {

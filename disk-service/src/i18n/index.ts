@@ -47,7 +47,7 @@ export function parseAcceptLanguage(acceptLanguage: string): Language {
   }
 
   const locales = new locale.Locales(acceptLanguage)
-  const language = (locales.best(supportedLangs).toString() ?? defaultLang) as Language
+  const language = locales.best(supportedLangs).toString() as Language
 
   acceptLangCache.set(acceptLanguage, language)
 

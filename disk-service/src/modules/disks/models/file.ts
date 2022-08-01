@@ -7,8 +7,9 @@ export interface File {
   exp: string | null
   mime: string | null
   userId: number
-  diskId: number
+  diskId: string
   folderId: string | null
+  hidden: boolean
   updatedAt: string
   createdAt: string
 }
@@ -24,6 +25,7 @@ export const FileModel = createModel<File>({
     userId: 'user_id',
     diskId: 'disk_id',
     folderId: 'folder_id',
+    hidden: 'hidden',
     updatedAt: 'updated_at',
     createdAt: 'created_at',
   },

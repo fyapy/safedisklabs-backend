@@ -8,6 +8,7 @@ import type {
   FolderModel,
   FolderService,
   FileService,
+  DiskService,
 } from 'modules/disks'
 import type { Language } from 'i18n'
 
@@ -37,6 +38,7 @@ export interface Services {
   UserService: ReturnType<typeof UserService>
   FolderService: ReturnType<typeof FolderService>
   FileService: ReturnType<typeof FileService>
+  DiskService: ReturnType<typeof DiskService>
 }
 
 export type SetupRoutes = FastifyPluginCallback<{

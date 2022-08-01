@@ -13,4 +13,5 @@ export default {
   EMAIL_ALREADY_IN_USE: 'Данный Email уже используеться!',
   USERNAME_ALREADY_IN_USE: 'Данный username уже используеться!',
   LOGIN_ERROR: 'Неправильный Username/Email/Пароль',
+  DISK_PERMISSION: 'У вас не достаточно прав на изменение содержимого диска',
 }
