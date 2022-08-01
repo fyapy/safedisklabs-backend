@@ -35,12 +35,18 @@ export const setupRoutes: SetupRoutes = (router, { services }, done) => {
     },
   })
 
-
   router.route<{ Body: input.ToggleHidden }>({
     url: '/toggle-hidden',
     method: 'POST',
     preHandler: zoplyValidate(input.toggleHiddenSchema),
     handler: ({ userId, body }) => services.DiskService.toggleHidden(body, userId),
+  })
+
+  router.route<{ Body: input.ToggleHidden }>({
+    url: '/toggle-starred',
+    method: 'POST',
+    preHandler: zoplyValidate(input.toggleHiddenSchema),
+    handler: ({ userId, body }) => services.DiskService.toggleStarred(body, userId),
   })
 
   done()

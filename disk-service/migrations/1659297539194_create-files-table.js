@@ -12,13 +12,15 @@ module.exports = createMigration({
         "mime" VARCHAR(255),
         "user_id" int NOT NULL,
         "disk_id" uuid NOT NULL,
-        "folder_id" uuid INDEX,
+        "folder_id" uuid,
         "hidden" BOOL DEFAULT false,
+        "starred" BOOL DEFAULT false,
         "created_at" timestamp NOT NULL DEFAULT (now()),
         "updated_at" timestamp NOT NULL DEFAULT (now())
       );
       CREATE INDEX "idx_files_folder_id" ON "files" ("folder_id");
       CREATE INDEX "idx_files_hidden" ON "files" ("hidden");
+      CREATE INDEX "idx_files_starred" ON "files" ("starred");
       ALTER TABLE "files" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
       ALTER TABLE "files" ADD FOREIGN KEY ("disk_id") REFERENCES "disks" ("id");
     `)
@@ -27,6 +29,7 @@ module.exports = createMigration({
     await sql.query(`
       DROP INDEX "idx_files_folder_id";
       DROP INDEX "idx_files_hidden";
+      DROP INDEX "idx_files_starred";
       ALTER TABLE "files" DROP CONSTRAINT "files_user_id_fkey";
       ALTER TABLE "files" DROP CONSTRAINT "files_disk_id_fkey";
       DROP TABLE "files";

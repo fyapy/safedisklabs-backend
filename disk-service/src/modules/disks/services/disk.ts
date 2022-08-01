@@ -40,7 +40,34 @@ export function DiskService({ FolderModel, FileModel, DiskModel }: Models) {
     return {}
   }
 
+  async function toggleStarred({ id, type }: input.ToggleHidden, userId: number) {
+    if (type === 'file') {
+      const fileInDb = await FileModel.findOne(id)
+      await userHavePermission(fileInDb.diskId, userId)
+
+      await FileModel.update({
+        where: id,
+        set: {
+          starred: !fileInDb.starred,
+        },
+      })
+      return {}
+    }
+
+    const folderInDb = await FolderModel.findOne(id)
+    await userHavePermission(folderInDb.diskId, userId)
+
+    await FolderModel.update({
+      where: id,
+      set: {
+        starred: !folderInDb.starred,
+      },
+    })
+    return {}
+  }
+
   return {
     toggleHidden,
+    toggleStarred,
   }
 }
