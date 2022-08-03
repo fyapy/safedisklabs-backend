@@ -8,7 +8,7 @@ module.exports = createMigration({
         "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
         "name" VARCHAR(255) NOT NULL,
         "size" BIGINT NOT NULL,
-        "exp" VARCHAR(255),
+        "ext" VARCHAR(255),
         "mime" VARCHAR(255),
         "user_id" int NOT NULL,
         "disk_id" uuid NOT NULL,

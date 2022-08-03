@@ -8,6 +8,9 @@ export default {
   ONE_OF: '#name# must be one of these values: #meta#',
   UNKNOWN: 'Unknown validation error',
 
+  INVALID_TOKEN: 'Invalid login session',
+  NOT_ENOUGH_DISK_SPACE: 'Not enough disk space',
+  UNKNOWN_FILE_TYPE: 'Failed to determine MIME type or file type',
   PLEASE_AUTH: 'Please login',
   FILE_NOT_FOUND: 'File not found (code: VPF-15)',
   EMAIL_ALREADY_IN_USE: 'This Email is already in use!',

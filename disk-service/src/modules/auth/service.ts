@@ -3,6 +3,7 @@ import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
 import { BadRequest } from 'utils/errors'
 import { GBToBytes } from 'utils/storage'
+import { isNotEmail } from 'utils/regex'
 import * as input from './input'
 import * as types from './types'
 
@@ -55,14 +56,10 @@ export function AuthService({ UserModel, DiskModel }: Models) {
     }
   }
 
-  async function login({ email, username, password }: input.Login) {
-    if (!username && !email) {
-      throw new BadRequest('LOGIN_ERROR')
-    }
-
+  async function login({ username, password }: input.Login) {
     const candidate = await UserModel.findOne({
-      where: email ? { email } : { username },
-      select: ['hash'],
+      where: isNotEmail(username) ? { username } : { email: username },
+      select: ['id', 'hash'],
     })
     if (!candidate) {
       throw new BadRequest('LOGIN_ERROR')
@@ -73,7 +70,12 @@ export function AuthService({ UserModel, DiskModel }: Models) {
       throw new BadRequest('LOGIN_ERROR')
     }
 
-    return createToken(candidate.id)
+    const user = await UserModel.findOne(candidate.id)
+
+    return {
+      ...createToken(candidate.id),
+      user,
+    }
   }
 
 

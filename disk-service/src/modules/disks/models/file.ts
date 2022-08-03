@@ -4,7 +4,7 @@ export interface File {
   id: string
   name: string
   size: number
-  exp: string | null
+  ext: string | null
   mime: string | null
   userId: number
   diskId: string
@@ -22,7 +22,7 @@ export const FileModel = createModel<File>({
     id: 'id',
     name: 'name',
     size: 'size',
-    exp: 'exp',
+    ext: 'ext',
     mime: 'mime',
     userId: 'user_id',
     diskId: 'disk_id',

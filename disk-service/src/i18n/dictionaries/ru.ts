@@ -8,10 +8,13 @@ export default {
   ONE_OF: '#name# должно быть одно из этих значений: #meta#',
   UNKNOWN: 'Неизвестная ошибка валидации',
 
+  INVALID_TOKEN: 'Не валидная сессия авторизации',
+  NOT_ENOUGH_DISK_SPACE: 'На диске не хватает места',
+  UNKNOWN_FILE_TYPE: 'Не получилось определить MIME type или же тип файла',
   PLEASE_AUTH: 'Пожалуйста авторизуйтесь',
   FILE_NOT_FOUND: 'Файл не найден (code: VPF-15)',
   EMAIL_ALREADY_IN_USE: 'Данный Email уже используеться!',
-  USERNAME_ALREADY_IN_USE: 'Данный username уже используеться!',
+  USERNAME_ALREADY_IN_USE: 'Имя пользователя уже используеться!',
   LOGIN_ERROR: 'Неправильный Username/Email/Пароль',
   DISK_PERMISSION: 'У вас не достаточно прав на изменение содержимого диска',
 }

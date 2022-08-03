@@ -1,10 +1,17 @@
-import { nullable, oneOf, required } from 'zoply-schema'
+import {
+  oneOf,
+  nullable,
+  optional,
+  required,
+} from 'zoply-schema'
 
 export interface Upload {
   diskId: string
+  folderId?: string
 }
 export const uploadSchema = {
   diskId: required,
+  folderId: optional(required),
 }
 
 export interface CreateFolder {

@@ -5,7 +5,7 @@ export interface User {
   username: string
   email: string
   hash?: string
-  blockedAt: string | null
+  blockedAt?: string | null
   updatedAt: string
   createdAt: string
 }
@@ -20,7 +20,10 @@ export const UserModel = createModel<User>({
       name: 'hash',
       hidden: true,
     },
-    blockedAt: 'blocked_at',
+    blockedAt: {
+      name: 'blocked_at',
+      hidden: true,
+    },
     updatedAt: 'updated_at',
     createdAt: 'created_at',
   },

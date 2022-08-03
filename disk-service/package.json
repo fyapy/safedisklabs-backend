@@ -15,6 +15,7 @@
     "@swc/core": "^1.2.220",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/locale": "^0.1.1",
+    "@types/minio": "^7.0.13",
     "@types/node": "^18.6.3",
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "clean-webpack-plugin": "^4.0.0",
@@ -45,8 +46,10 @@
     "fastify": "^4.3.0",
     "fastify-multer": "^2.0.3",
     "file-type": "16.5.3",
+    "is-svg": "^4.3.2",
     "jsonwebtoken": "^8.5.1",
     "locale": "^0.1.0",
+    "minio": "^7.0.29",
     "zoply-schema": "^1.0.2"
   }
 }

@@ -1,13 +1,11 @@
-import { required, optional, email } from 'zoply-schema'
+import { required, email } from 'zoply-schema'
 
 export interface Login {
-  username?: string
-  email?: string
+  username: string
   password: string
 }
 export const loginSchema = {
-  username: optional(required),
-  email: optional(required),
+  username: required,
   password: required,
 }
 
