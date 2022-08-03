@@ -35,7 +35,7 @@ export async function mimeType(file: File): Promise<{
 
   return {
     size,
-    ext: extname(file.originalname) ?? null,
+    ext: extname(file.originalname).replace('.', '') ?? null,
     mime: file.mimetype ?? null,
   }
 }
