@@ -1,4 +1,4 @@
-import type { SetupRoutes } from 'utils/types'
+import type { JustId, SetupRoutes } from 'utils/types'
 import { HttpError, zoplyValidate } from 'utils/errors'
 import * as storage from 'utils/storage'
 import { authPreHandler } from 'modules/auth'
@@ -10,11 +10,15 @@ export const setupRoutes: SetupRoutes = (router, { services }, done) => {
     ? services.Models.FileModel
     : services.Models.FolderModel
 
-  router.route({
+  router.route<{
+    Querystring: {
+      type?: 'starred' | 'hidden' | 'bin'
+    }
+  }>({
     url: '/list',
     method: 'GET',
     preHandler: auth(),
-    handler: req => services.DiskService.list(req.userId),
+    handler: req => services.DiskService.list(req.userId, req.query.type),
   })
 
   router.route<{ Body: input.CreateFolder }>({
@@ -47,6 +51,13 @@ export const setupRoutes: SetupRoutes = (router, { services }, done) => {
     },
   })
 
+  router.route<{ Params: JustId }>({
+    url: '/details/:id',
+    method: 'GET',
+    preHandler: auth(),
+    handler: ({ userId, params }) => services.DiskService.details(params.id, userId),
+  })
+
   router.route<{ Body: input.ToggleHidden }>({
     url: '/toggle-hidden',
     method: 'POST',
@@ -59,6 +70,20 @@ export const setupRoutes: SetupRoutes = (router, { services }, done) => {
     method: 'POST',
     preHandler: [auth(), zoplyValidate(input.toggleHiddenSchema)],
     handler: ({ userId, body }) => services.DiskService.toggleStarred(body, userId, getModel(body.type)),
+  })
+
+  router.route<{ Body: input.ToggleHidden }>({
+    url: '/toggle-shared',
+    method: 'POST',
+    preHandler: [auth(), zoplyValidate(input.toggleHiddenSchema)],
+    handler: ({ userId, body }) => services.DiskService.toggleShared(body, userId, getModel(body.type)),
+  })
+
+  router.route<{ Body: input.ToggleHidden }>({
+    url: '/move-to-bin',
+    method: 'POST',
+    preHandler: [auth(), zoplyValidate(input.toggleHiddenSchema)],
+    handler: ({ userId, body }) => services.DiskService.moveToBin(body, userId, getModel(body.type)),
   })
 
   router.route<{ Body: input.Rename }>({

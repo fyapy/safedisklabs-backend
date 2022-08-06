@@ -159,3 +159,7 @@ const _minIO = new Client({
 export function minIoPutFile(objectName: string, file: File) {
   return _minIO.putObject('disksafelabs', objectName, file.path!)
 }
+
+export function minIoRemoveFile(objectName: string) {
+  return _minIO.removeObject('disksafelabs', objectName)
+}

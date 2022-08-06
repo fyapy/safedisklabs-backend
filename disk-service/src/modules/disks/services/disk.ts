@@ -1,15 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { File, Models } from 'utils/types'
 import * as storage from 'utils/storage'
-import { Client } from 'minio'
-import { BadRequest } from 'utils/errors'
+import { BadRequest, NotFound } from 'utils/errors'
 import { Increment, IsNull } from 'aurora-orm'
-import { fromFile } from 'file-type'
 import * as input from '../input'
 import { FileOrFolderModel } from '../models'
 
 export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
   async function userHavePermission(diskId: string, userId: number) {
+    if (!diskId) {
+      throw new BadRequest('FILE_NOT_FOUND_2')
+    }
+
     const isExist = await DiskModel.exists({
       id: diskId,
       userId,
@@ -17,6 +18,26 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
 
     if (!isExist) {
       throw new BadRequest('DISK_PERMISSION')
+    }
+  }
+
+  async function details(id: string, userId: number) {
+    let fileInDb: any = await FileModel.findOne(id)
+    let type = 'file'
+    if (!fileInDb) {
+      fileInDb = await FolderModel.findOne(id)
+      type = 'folder'
+    }
+
+    if (!fileInDb) {
+      throw new NotFound('FILE_NOT_FOUND_3')
+    }
+
+    await userHavePermission(fileInDb.diskId, userId)
+
+    return {
+      data: fileInDb,
+      type,
     }
   }
 
@@ -49,6 +70,25 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
     }
   }
 
+  async function moveToBin({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
+    const folderInDb = await model.findOne(id)
+    await userHavePermission(folderInDb.diskId, userId)
+
+    if (!folderInDb.bin) {
+      await model.update({
+        where: id,
+        set: {
+          bin: true,
+        },
+      })
+    } else {
+      await storage.minIoRemoveFile(id)
+      await model.delete(id)
+    }
+
+    return {}
+  }
+
   async function rename({ id, name }: input.Rename, userId: number, model: FileOrFolderModel) {
     const folderInDb = await model.findOne(id)
     await userHavePermission(folderInDb.diskId, userId)
@@ -60,6 +100,21 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
       },
     })
     return {}
+  }
+
+  async function toggleShared({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
+    const folderInDb = await model.findOne(id)
+    await userHavePermission(folderInDb.diskId, userId)
+
+    await model.update({
+      where: id,
+      set: {
+        shared: !folderInDb.shared,
+      },
+    })
+    return {
+      value: !folderInDb.shared,
+    }
   }
 
   async function _uploadFile({ userId, body, file }: {
@@ -112,7 +167,10 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
     }
   }
 
-  async function list(userId: number) {
+  async function list(userId: number, type?: 'starred' | 'hidden' | 'bin') {
+    const starred = type === 'starred'
+    const hidden = type === 'hidden'
+    const bin = type === 'bin'
     const tx = await FileModel.getConnect()
 
     try {
@@ -124,6 +182,9 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
         FolderModel.findAll({
           where: {
             diskId: disk.id,
+            ...(starred ? { starred } : {}),
+            hidden,
+            bin,
             folderId: IsNull(),
           },
           tx,
@@ -131,6 +192,9 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
         FileModel.findAll({
           where: {
             diskId: disk.id,
+            ...(starred ? { starred } : {}),
+            hidden,
+            bin,
             folderId: IsNull(),
           },
           tx,
@@ -157,5 +221,8 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
     rename,
     upload,
     list,
+    moveToBin,
+    toggleShared,
+    details,
   }
 }

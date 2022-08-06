@@ -13,6 +13,8 @@ export default {
   UNKNOWN_FILE_TYPE: 'Не получилось определить MIME type или же тип файла',
   PLEASE_AUTH: 'Пожалуйста авторизуйтесь',
   FILE_NOT_FOUND: 'Файл не найден (code: VPF-15)',
+  FILE_NOT_FOUND_2: 'Файл не найден (code: VPF-16)',
+  FILE_NOT_FOUND_3: 'Файл не найден (code: VPF-17)',
   EMAIL_ALREADY_IN_USE: 'Данный Email уже используеться!',
   USERNAME_ALREADY_IN_USE: 'Имя пользователя уже используеться!',
   LOGIN_ERROR: 'Неправильный Username/Email/Пароль',
