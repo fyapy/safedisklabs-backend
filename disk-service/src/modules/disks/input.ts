@@ -1,9 +1,13 @@
 import {
-  oneOf,
   nullable,
   optional,
   required,
 } from 'zoply-schema'
+
+export interface ListQuery {
+  type?: 'starred' | 'hidden' | 'bin'
+  folderId?: string
+}
 
 export interface Upload {
   diskId: string
@@ -25,22 +29,11 @@ export const createFolderSchema = {
   folderId: nullable(required),
 }
 
-export interface ToggleHidden {
-  id: string
-  type: 'folder' | 'file'
-}
-export const toggleHiddenSchema = {
-  id: required,
-  type: oneOf(['folder', 'file']),
-}
-
 export interface Rename {
   id: string
   name: string
-  type: 'folder' | 'file'
 }
 export const renameSchema = {
   id: required,
   name: required,
-  type: oneOf(['folder', 'file']),
 }

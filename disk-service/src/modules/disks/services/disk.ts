@@ -1,11 +1,16 @@
 import type { File, Models } from 'utils/types'
+import {
+  Decrement,
+  Increment,
+  IsNull,
+  Tx,
+} from 'aurora-orm'
 import * as storage from 'utils/storage'
 import { BadRequest, NotFound } from 'utils/errors'
-import { Increment, IsNull } from 'aurora-orm'
+import { File as FileModelType } from '../models'
 import * as input from '../input'
-import { FileOrFolderModel } from '../models'
 
-export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
+export const DiskService = ({ DiskModel, FileModel, MetaModel }: Models) => {
   async function userHavePermission(diskId: string, userId: number) {
     if (!diskId) {
       throw new BadRequest('FILE_NOT_FOUND_2')
@@ -22,13 +27,10 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
   }
 
   async function details(id: string, userId: number) {
-    let fileInDb: any = await FileModel.findOne(id)
-    let type = 'file'
-    if (!fileInDb) {
-      fileInDb = await FolderModel.findOne(id)
-      type = 'folder'
-    }
-
+    const fileInDb = await FileModel.findOne({
+      where: id,
+      join: ['meta'],
+    })
     if (!fileInDb) {
       throw new NotFound('FILE_NOT_FOUND_3')
     }
@@ -37,28 +39,28 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
 
     return {
       data: fileInDb,
-      type,
     }
   }
 
-  async function toggleHidden({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
-    const folderInDb = await model.findOne(id)
+  async function toggleHidden(id: string, userId: number) {
+    const folderInDb = await FileModel.findOne(id)
     await userHavePermission(folderInDb.diskId, userId)
 
-    await model.update({
+    await FileModel.update({
       where: id,
       set: {
         hidden: !folderInDb.hidden,
       },
     })
+
     return {}
   }
 
-  async function toggleStarred({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
-    const folderInDb = await model.findOne(id)
+  async function toggleStarred(id: string, userId: number) {
+    const folderInDb = await FileModel.findOne(id)
     await userHavePermission(folderInDb.diskId, userId)
 
-    await model.update({
+    await FileModel.update({
       where: id,
       set: {
         starred: !folderInDb.starred,
@@ -70,12 +72,16 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
     }
   }
 
-  async function moveToBin({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
-    const folderInDb = await model.findOne(id)
+  async function moveToBin(id: string, userId: number) {
+    const folderInDb = await FileModel.findOne({
+      where: id,
+      join: ['meta'],
+    })
+
     await userHavePermission(folderInDb.diskId, userId)
 
     if (!folderInDb.bin) {
-      await model.update({
+      await FileModel.update({
         where: id,
         set: {
           bin: true,
@@ -83,35 +89,46 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
       })
     } else {
       await storage.minIoRemoveFile(id)
-      await model.delete(id)
+      await FileModel.delete(id)
+
+      if (folderInDb.meta) {
+        await DiskModel.update({
+          where: folderInDb.diskId,
+          set: {
+            usedSize: Decrement(folderInDb.meta.size),
+          },
+        })
+      }
     }
 
     return {}
   }
 
-  async function rename({ id, name }: input.Rename, userId: number, model: FileOrFolderModel) {
-    const folderInDb = await model.findOne(id)
+  async function rename({ id, name }: input.Rename, userId: number) {
+    const folderInDb = await FileModel.findOne(id)
     await userHavePermission(folderInDb.diskId, userId)
 
-    await model.update({
+    await FileModel.update({
       where: id,
       set: {
         name,
       },
     })
+
     return {}
   }
 
-  async function toggleShared({ id }: input.ToggleHidden, userId: number, model: FileOrFolderModel) {
-    const folderInDb = await model.findOne(id)
+  async function toggleShared(id: string, userId: number) {
+    const folderInDb = await FileModel.findOne(id)
     await userHavePermission(folderInDb.diskId, userId)
 
-    await model.update({
+    await FileModel.update({
       where: id,
       set: {
         shared: !folderInDb.shared,
       },
     })
+
     return {
       value: !folderInDb.shared,
     }
@@ -133,13 +150,17 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
     }
 
     const fileInDb = await FileModel.create({
+      type: 'file',
       diskId: body.diskId,
-      ext,
       folderId: body.folderId ?? null,
-      mime,
       name: file.originalname,
-      size,
       userId,
+    })
+    fileInDb.meta = await MetaModel.create({
+      fileId: fileInDb.id,
+      ext,
+      mime,
+      size,
     })
     await storage.minIoPutFile(fileInDb.id, file)
     await DiskModel.update({
@@ -167,7 +188,31 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
     }
   }
 
-  async function list(userId: number, type?: 'starred' | 'hidden' | 'bin') {
+  async function folderPaths(folderId: string | undefined, tx: Tx) {
+    console.log(1, folderId)
+
+    if (!folderId) return []
+
+    const paths: FileModelType[] = []
+    let currentFolderId: string | null = folderId
+
+    while (currentFolderId) {
+      const folder = await FileModel.findOne({
+        where: {
+          id: currentFolderId,
+          type: 'folder',
+        },
+        select: ['name', 'shared', 'id', 'folderId'],
+        tx,
+      })
+
+      currentFolderId = folder.folderId
+      paths.push(folder)
+    }
+
+    return paths.reverse()
+  }
+  async function list(userId: number, { type, folderId }: input.ListQuery) {
     const starred = type === 'starred'
     const hidden = type === 'hidden'
     const bin = type === 'bin'
@@ -175,43 +220,49 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
 
     try {
       const disk = await DiskModel.findOne({
-        where: { userId },
+        where: {
+          userId,
+        },
         tx,
       })
-      const [folders, files] = await Promise.all([
-        FolderModel.findAll({
-          where: {
-            diskId: disk.id,
-            ...(starred ? { starred } : {}),
-            hidden,
-            bin,
-            folderId: IsNull(),
-          },
-          tx,
-        }),
+      const [list, paths] = await Promise.all([
         FileModel.findAll({
           where: {
             diskId: disk.id,
             ...(starred ? { starred } : {}),
             hidden,
             bin,
-            folderId: IsNull(),
+            folderId: folderId || IsNull(),
           },
+          join: ['meta'],
           tx,
         }),
+        folderPaths(folderId, tx),
       ])
 
       return {
         data: disk,
-        list: {
-          folders,
-          files,
-        },
+        list,
+        paths,
       }
     } catch (e) {
       throw e
     } finally {
       tx.release()
+    }
+  }
+
+  async function createFolder({ name, diskId, folderId }: input.CreateFolder, userId: number) {
+    const data = await FileModel.create({
+      type: 'folder',
+      name,
+      diskId,
+      folderId,
+      userId,
+    })
+
+    return {
+      data,
     }
   }
 
@@ -223,6 +274,7 @@ export const DiskService = ({ DiskModel, FileModel, FolderModel }: Models) => {
     list,
     moveToBin,
     toggleShared,
+    createFolder,
     details,
   }
 }

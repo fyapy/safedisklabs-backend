@@ -5,9 +5,7 @@ import type { AuthService } from 'modules/auth'
 import type {
   DiskModel,
   FileModel,
-  FolderModel,
-  FolderService,
-  FileService,
+  MetaModel,
   DiskService,
 } from 'modules/disks'
 import type { Language } from 'i18n'
@@ -33,14 +31,12 @@ export interface Models {
   UserModel: typeof UserModel
   DiskModel: typeof DiskModel
   FileModel: typeof FileModel
-  FolderModel: typeof FolderModel
+  MetaModel: typeof MetaModel
 }
 export interface Services {
   Models: Models
   AuthService: ReturnType<typeof AuthService>
   UserService: ReturnType<typeof UserService>
-  FolderService: ReturnType<typeof FolderService>
-  FileService: ReturnType<typeof FileService>
   DiskService: ReturnType<typeof DiskService>
 }
 export type GetServices = () => Services

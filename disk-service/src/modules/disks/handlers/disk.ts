@@ -6,26 +6,19 @@ import * as input from '../input'
 
 export const setupRoutes: SetupRoutes = (router, { services }, done) => {
   const auth = authPreHandler(services.Models)
-  const getModel = (type: 'file' | 'folder') => type === 'file'
-    ? services.Models.FileModel
-    : services.Models.FolderModel
 
-  router.route<{
-    Querystring: {
-      type?: 'starred' | 'hidden' | 'bin'
-    }
-  }>({
+  router.route<{ Querystring: input.ListQuery }>({
     url: '/list',
     method: 'GET',
     preHandler: auth(),
-    handler: req => services.DiskService.list(req.userId, req.query.type),
+    handler: req => services.DiskService.list(req.userId, req.query),
   })
 
   router.route<{ Body: input.CreateFolder }>({
     url: '/create-folder',
     method: 'POST',
     preHandler: [auth(), zoplyValidate(input.createFolderSchema)],
-    handler: req => services.FolderService.create(req.body, req.userId),
+    handler: req => services.DiskService.createFolder(req.body, req.userId),
   })
 
   router.route<{ Body: input.Upload }>({
@@ -58,39 +51,39 @@ export const setupRoutes: SetupRoutes = (router, { services }, done) => {
     handler: ({ userId, params }) => services.DiskService.details(params.id, userId),
   })
 
-  router.route<{ Body: input.ToggleHidden }>({
-    url: '/toggle-hidden',
+  router.route<{ Params: JustId }>({
+    url: '/toggle-hidden/:id',
     method: 'POST',
-    preHandler: [auth(), zoplyValidate(input.toggleHiddenSchema)],
-    handler: ({ userId, body }) => services.DiskService.toggleHidden(body, userId, getModel(body.type)),
+    preHandler: auth(),
+    handler: ({ userId, params }) => services.DiskService.toggleHidden(params.id, userId),
   })
 
-  router.route<{ Body: input.ToggleHidden }>({
-    url: '/toggle-starred',
+  router.route<{ Params: JustId }>({
+    url: '/toggle-starred/:id',
     method: 'POST',
-    preHandler: [auth(), zoplyValidate(input.toggleHiddenSchema)],
-    handler: ({ userId, body }) => services.DiskService.toggleStarred(body, userId, getModel(body.type)),
+    preHandler: auth(),
+    handler: ({ userId, params }) => services.DiskService.toggleStarred(params.id, userId),
   })
 
-  router.route<{ Body: input.ToggleHidden }>({
-    url: '/toggle-shared',
+  router.route<{ Params: JustId }>({
+    url: '/toggle-shared/:id',
     method: 'POST',
-    preHandler: [auth(), zoplyValidate(input.toggleHiddenSchema)],
-    handler: ({ userId, body }) => services.DiskService.toggleShared(body, userId, getModel(body.type)),
+    preHandler: auth(),
+    handler: ({ userId, params }) => services.DiskService.toggleShared(params.id, userId),
   })
 
-  router.route<{ Body: input.ToggleHidden }>({
-    url: '/move-to-bin',
+  router.route<{ Params: JustId }>({
+    url: '/move-to-bin/:id',
     method: 'POST',
-    preHandler: [auth(), zoplyValidate(input.toggleHiddenSchema)],
-    handler: ({ userId, body }) => services.DiskService.moveToBin(body, userId, getModel(body.type)),
+    preHandler: auth(),
+    handler: ({ userId, params }) => services.DiskService.moveToBin(params.id, userId),
   })
 
   router.route<{ Body: input.Rename }>({
     url: '/rename',
     method: 'POST',
     preHandler: [auth(), zoplyValidate(input.renameSchema)],
-    handler: ({ userId, body }) => services.DiskService.rename(body, userId, getModel(body.type)),
+    handler: ({ userId, body }) => services.DiskService.rename(body, userId),
   })
 
   done()
